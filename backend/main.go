@@ -3,7 +3,10 @@ package main
 import (
 	"os"
 
+	router "umd/routes"
+
 	"github.com/gofiber/fiber/v2"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func getPort() string {
@@ -19,12 +22,7 @@ func getPort() string {
 
 func main() {
 	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"message": "Hello, Railway!",
-		})
-	})
+	router.CreateRoutes(app)
 
 	app.Listen(getPort())
 }
