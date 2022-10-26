@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -24,7 +23,6 @@ func boxOauthConfig() *oauth2.Config {
 
 func BoxAuthLogin(c *fiber.Ctx) error {
 	path := boxOauthConfig()
-	log.Println(path.RedirectURL)
 	url := path.AuthCodeURL("state")
 	return c.Redirect(url)
 }
@@ -44,8 +42,15 @@ func BoxAuthLogout(c *fiber.Ctx) error {
 }
 
 func BoxOauthRedirect(c *fiber.Ctx) error {
-	// Get AccessToken from endpoints
-	payload, err := boxOauthConfig().Exchange(c.Context(), c.FormValue("code"))
+	code := struct {
+		Code string `json:"code"`
+	}{}
+
+	if err := c.BodyParser(&code); err != nil {
+		return (c.JSON(fiber.Map{"Error": err.Error()}))
+	}
+
+	payload, err := boxOauthConfig().Exchange(c.Context(), code.Code)
 	if err != nil {
 		return c.JSON(fiber.Map{"Error": err.Error()})
 	}
@@ -53,18 +58,31 @@ func BoxOauthRedirect(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"Error": "token nil"})
 	}
 
-	// Set AccessToken and RefreshToken in Browser Cookies
-	c.Cookie(&fiber.Cookie{
-		Name:    "AccessToken",
-		Value:   payload.AccessToken,
-		Expires: payload.Expiry,
-	})
-
-	c.Cookie(&fiber.Cookie{
-		Name:  "RefreshToken",
-		Value: payload.RefreshToken,
-	})
-
-	// Send user back to home page
-	return c.Redirect("/")
+	return c.JSON(payload)
 }
+
+// func BoxOauthRedirect(c *fiber.Ctx) error {
+// 	// Get AccessToken from endpoints
+// 	payload, err := boxOauthConfig().Exchange(c.Context(), c.FormValue("code"))
+// 	if err != nil {
+// 		return c.JSON(fiber.Map{"Error": err.Error()})
+// 	}
+// 	if payload == nil {
+// 		return c.JSON(fiber.Map{"Error": "token nil"})
+// 	}
+//
+// 	// Set AccessToken and RefreshToken in Browser Cookies
+// 	c.Cookie(&fiber.Cookie{
+// 		Name:    "AccessToken",
+// 		Value:   payload.AccessToken,
+// 		Expires: payload.Expiry,
+// 	})
+//
+// 	c.Cookie(&fiber.Cookie{
+// 		Name:  "RefreshToken",
+// 		Value: payload.RefreshToken,
+// 	})
+//
+// 	// Send user back to home page
+// 	return c.Redirect("/")
+// }

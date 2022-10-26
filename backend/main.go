@@ -13,7 +13,7 @@ import (
 func getPort() string {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = ":3000"
+		port = ":8000"
 	} else {
 		port = ":" + port
 	}

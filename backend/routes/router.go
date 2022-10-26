@@ -35,7 +35,6 @@ func RegisterDefaults(app *fiber.App) {
 				c.JSON(fiber.Map{"Error": err.Error()})
 			}
 			_, body, errs := a.Bytes()
-			// log.Println(code, string(body))
 			if errs != nil {
 				return c.JSON(fiber.Map{"Error": errs})
 			}
@@ -59,5 +58,5 @@ func OauthRoutes(app *fiber.App) {
 	auth := app.Group("/auth/box")
 	auth.Get("/login", middleware.BoxAuthLogin)
 	auth.Get("/logout", middleware.BoxAuthLogout)
-	auth.Get("/callback", middleware.BoxOauthRedirect)
+	auth.Post("/callback", middleware.BoxOauthRedirect)
 }
